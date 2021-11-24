@@ -10,6 +10,8 @@
 
 #include "a2-helpers.hpp"
 
+int num_of_thread_used = 4;
+
 using namespace std;
 
 // A set of random gradients, adjusted for this mandelbrot algorithm
@@ -25,17 +27,14 @@ bool mandelbrot_kernel(complex<double> c, vector<int> &pixel)
     int max_iterations = 2048, iteration = 0;
     complex<double> z(0, 0);
 
-    #pragma omp parallel
-    {
-        while (abs(z) <= 4 && (iteration < max_iterations))
+    while (abs(z) <= 4 && (iteration < max_iterations))
         {
+            /* Threads update the shared counter by turns */
             z = z * z + c;
             iteration++;
+
         }
 
-    }
-
-    #pragma omp barrier
     // now the computation of the color gradient and interpolation
     double length = sqrt(z.real() * z.real() + z.imag() * z.imag());
     long double m = (iteration + 1 - log(length) / log(2.0));
@@ -73,6 +72,8 @@ int mandelbrot(Image &image, double ratio = 0.15)
     vector<int> pixel = {0, 0, 0}; // red, green, blue (each range 0-255)
     complex<double> c;
 
+    omp_set_num_threads(num_of_thread_used);
+    #pragma omp parallel for reduction (+:pixels_inside) private(i,j,pixel,c) collapse(2)
     for (j = 0; j < h; j++)
     {
         for (i = 0; i < w; i++)
@@ -83,7 +84,7 @@ int mandelbrot(Image &image, double ratio = 0.15)
             c = complex<double>(dx, dy);
 
             if (mandelbrot_kernel(c, pixel)) // the actual mandelbrot kernel
-                pixels_inside++;
+                    pixels_inside++;
 
             // apply to the image
             for (int ch = 0; ch < channels; ch++)
@@ -91,6 +92,7 @@ int mandelbrot(Image &image, double ratio = 0.15)
         }
     }
 
+    //#pragma omp barrier
     return pixels_inside;
 }
 
@@ -120,8 +122,11 @@ void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int 
     int displ = (kernel.size() / 2); // height==width!
     for (int step = 0; step < nsteps; step++)
     {
+
         for (int ch = 0; ch < channels; ch++)
         {
+            omp_set_num_threads(num_of_thread_used);
+            #pragma omp parallel for collapse(2)
             for (int i = 0; i < h; i++)
             {
                 for (int j = 0; j < w; j++)
@@ -150,7 +155,7 @@ void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int 
                 }
             }
         }
-
+        //#pragma omp barrier
         if ( step < nsteps-1 ) {
             // swap references
             // we can reuse the src buffer for this example
@@ -158,6 +163,7 @@ void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int 
         }
     }
 }
+
 
 int main(int argc, char **argv)
 {
@@ -185,8 +191,8 @@ int main(int argc, char **argv)
 
     auto t2 = chrono::high_resolution_clock::now();
 
-    cout << "Mandelbrot time: " << chrono::duration<double>(t2 - t1).count() << endl;
-    cout << "Total Mandelbrot pixels: " << pixels_inside << endl;
+    cout << "Mandelbrot time (openMp): " << chrono::duration<double>(t2 - t1).count() << endl;
+    cout << "Total Mandelbrot pixels (openMp): " << pixels_inside << endl;
 
     // Actual 2D convolution part
     // Use OpenMP tasking to implement a parallel version
@@ -196,9 +202,9 @@ int main(int argc, char **argv)
 
     auto t4 = chrono::high_resolution_clock::now();
 
-    cout << "Convolution time: " << chrono::duration<double>(t4 - t3).count() << endl;
+    cout << "Convolution time (openMp): " << chrono::duration<double>(t4 - t3).count() << endl;
 
-    cout << "Total time: " << chrono::duration<double>((t4 - t3) + (t2-t1)).count() << endl;
+    cout << "Total time (openMp): " << chrono::duration<double>((t4 - t3) + (t2-t1)).count() << endl;
 
     // save image
     std::ofstream ofs("mandelbrot_openmp.ppm", std::ofstream::out);

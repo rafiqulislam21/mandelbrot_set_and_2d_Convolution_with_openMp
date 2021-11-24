@@ -47,19 +47,19 @@ bool mandelbrot_kernel(complex<double> c, vector<int> &pixel)
  * Compute the Mandelbrot set for each pixel of a given image.
  * Image is the Image data structure for storing RGB image
  * The default value for ratio is 0.15.
- * 
+ *
  * @param[inout] image
  * @param[in] ratio
- * 
+ *
 */
 int mandelbrot(Image &image, double ratio = 0.15)
 {
-    int i, j; 
+    int i, j;
     int h = image.height;
     int w = image.width;
     int channels = image.channels;
     ratio /= 10.0;
-    
+
     int pixels_inside=0;
 
     // pixel to be passed to the mandelbrot function
@@ -83,24 +83,24 @@ int mandelbrot(Image &image, double ratio = 0.15)
                 image(ch, j, i) = pixel[ch];
         }
     }
-    
+
     return pixels_inside;
 }
 
 /**
  * 2D Convolution
  * src is the source Image to which we apply the filter.
- * Resulting image is saved in dst. The size of the kernel is 
- * given with kernel_width (must be odd number). Sigma represents 
+ * Resulting image is saved in dst. The size of the kernel is
+ * given with kernel_width (must be odd number). Sigma represents
  * the standard deviation of the filter. The number of iterations
  * is given with the nstep (default=1)
- * 
+ *
  * @param[in] src
  * @param[out] dst
  * @param[in] kernel_width
  * @param[in] sigma
  * @param[in] nsteps
- * 
+ *
 */
 void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int nsteps=1)
 {
@@ -135,7 +135,7 @@ void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int 
                             } else {
                                 src_val = src(ch, cy, cx);
                             }
-                            
+
                             val += kernel[k + displ][l + displ] * src_val;
                         }
                     }
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 
     auto t1 = chrono::high_resolution_clock::now();
 
-    // Generate the mandelbrot set 
+    // Generate the mandelbrot set
     // Use OpenMP tasking to implement a parallel version
     pixels_inside = mandelbrot(image, ratio);
 
@@ -183,7 +183,7 @@ int main(int argc, char **argv)
 
     // Actual 2D convolution part
     // Use OpenMP tasking to implement a parallel version
-    auto t3 = chrono::high_resolution_clock::now(); 
+    auto t3 = chrono::high_resolution_clock::now();
 
     convolution_2d(image, filtered_image, 5, 0.37, 20);
 

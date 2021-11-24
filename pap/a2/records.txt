@@ -1,0 +1,42 @@
+sequential:
+Mandelbrot time: 44.5807
+Total Mandelbrot pixels: 1478026
+Convolution time: 46.7185
+Total time: 91.2992
+
+Process returned 0 (0x0)   execution time : 98.436 s
+Press any key to continue.
+
+
+
+parallel:
+
+Mandelbrot time: 34.8658
+Total Mandelbrot pixels: 1475289
+Convolution time: 47.4959
+Total time: 82.3617
+
+Process returned 0 (0x0)   execution time : 89.630 s
+Press any key to continue.
+-----------------------------------
+after ading 2d parallel:
+Mandelbrot time: 35.3778
+Total Mandelbrot pixels: 1475072
+Convolution time: 22.2972
+Total time: 57.675
+
+Process returned 0 (0x0)   execution time : 65.179 s
+Press any key to continue.
+
+----------------------------------------------------
+after adding reduction
+
+Mandelbrot time (openMp): 37.1169
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 24.071
+Total time (openMp): 61.1879
+
+Process returned 0 (0x0)   execution time : 68.749 s
+Press any key to continue.
+
+
