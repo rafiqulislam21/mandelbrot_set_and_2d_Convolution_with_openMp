@@ -10,7 +10,7 @@
 
 #include "a2-helpers.hpp"
 
-int num_of_thread_used = 4;
+//int num_of_thread_used = 4;
 
 using namespace std;
 
@@ -58,7 +58,7 @@ bool mandelbrot_kernel(complex<double> c, vector<int> &pixel)
  * @param[in] ratio
  *
 */
-int mandelbrot(Image &image, double ratio = 0.15)
+int mandelbrot(Image &image, double ratio = 0.15, int num_of_thread_used=1)
 {
     int i, j;
     int h = image.height;
@@ -111,7 +111,7 @@ int mandelbrot(Image &image, double ratio = 0.15)
  * @param[in] nsteps
  *
 */
-void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int nsteps=1)
+void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int nsteps=1, int num_of_thread_used=1)
 {
     int h = src.height;
     int w = src.width;
@@ -164,9 +164,56 @@ void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int 
     }
 }
 
+void imageValidation(){
+    bool isValid = false;
+
+    ifstream ifs("mandelbrot.ppm", ios::in | ios::binary); // input file
+    ostringstream oss; // output to string
+    ifstream ifs_openmp("mandelbrot_openmp.ppm", ios::in | ios::binary); // input file
+    ostringstream oss_openmp; // output to string
+
+    int len;
+    char buf[1024];
+    while((len = ifs.readsome(buf, 1024)) > 0)
+    {
+        oss.write(buf, len);
+    }
+
+    int len_openmp;
+    char buf_openmp[1024];
+    while((len_openmp = ifs_openmp.readsome(buf_openmp, 1024)) > 0)
+    {
+        oss_openmp.write(buf_openmp, len_openmp);
+    }
+
+    string data = oss.str(); // get string data out of stream
+    string data_openmp = oss_openmp.str(); // get string data out of stream
+
+    if(data.length() == data_openmp.length()){
+         for(int i = 0; i < data.length(); i++){
+            if(data[i] == data_openmp[i]){
+                isValid = true;
+            }else{
+                isValid = false;
+                break;
+            }
+        }
+    }
+
+
+    if(isValid){
+        cout<<"Image validation successful!"<<endl;
+    }else{
+        cout<<"Imge validation failed!"<<endl;
+    }
+
+}
+
 
 int main(int argc, char **argv)
 {
+    int thread_used [5] = { 1, 2, 4, 8, 16 };
+
     // height and width of the output image
     // keep the height/width ratio for the same image
     int width = 1536, height = 1024;
@@ -183,28 +230,34 @@ int main(int argc, char **argv)
     // Save the results of 2D convolution in this image
     Image filtered_image(channels, height, width);
 
-    auto t1 = chrono::high_resolution_clock::now();
 
-    // Generate the mandelbrot set
-    // Use OpenMP tasking to implement a parallel version
-    pixels_inside = mandelbrot(image, ratio);
+    //using different trheads
+    for(int i = 0; i < sizeof(thread_used)/sizeof(*thread_used); i++){
+        cout << "Parallel executation using : " <<thread_used[i]<<" threads."<<endl;
+        auto t1 = chrono::high_resolution_clock::now();
 
-    auto t2 = chrono::high_resolution_clock::now();
+        // Generate the mandelbrot set
+        // Use OpenMP tasking to implement a parallel version
+        pixels_inside = mandelbrot(image, ratio, thread_used[i]);
 
-    cout << "Mandelbrot time (openMp): " << chrono::duration<double>(t2 - t1).count() << endl;
-    cout << "Total Mandelbrot pixels (openMp): " << pixels_inside << endl;
+        auto t2 = chrono::high_resolution_clock::now();
 
-    // Actual 2D convolution part
-    // Use OpenMP tasking to implement a parallel version
-    auto t3 = chrono::high_resolution_clock::now();
+        cout << "Mandelbrot time (openMp): " << chrono::duration<double>(t2 - t1).count() << endl;
+        cout << "Total Mandelbrot pixels (openMp): " << pixels_inside << endl;
 
-    convolution_2d(image, filtered_image, 5, 0.37, 20);
+        // Actual 2D convolution part
+        // Use OpenMP tasking to implement a parallel version
+        auto t3 = chrono::high_resolution_clock::now();
 
-    auto t4 = chrono::high_resolution_clock::now();
+        convolution_2d(image, filtered_image, 5, 0.37, 20, thread_used[i]);
 
-    cout << "Convolution time (openMp): " << chrono::duration<double>(t4 - t3).count() << endl;
+        auto t4 = chrono::high_resolution_clock::now();
 
-    cout << "Total time (openMp): " << chrono::duration<double>((t4 - t3) + (t2-t1)).count() << endl;
+        cout << "Convolution time (openMp): " << chrono::duration<double>(t4 - t3).count() << endl;
+
+        cout << "Total time (openMp): " << chrono::duration<double>((t4 - t3) + (t2-t1)).count() << endl<<endl;
+    }
+
 
     // save image
     std::ofstream ofs("mandelbrot_openmp.ppm", std::ofstream::out);
@@ -220,6 +273,9 @@ int main(int argc, char **argv)
         }
     }
     ofs.close();
+
+    // image validation
+    imageValidation();
 
     return 0;
 }
