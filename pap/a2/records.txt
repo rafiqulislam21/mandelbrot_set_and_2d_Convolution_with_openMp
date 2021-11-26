@@ -77,15 +77,43 @@ Press any key to continue.
 =======================ALMA====================================
 sequential--------------
 
-Mandelbrot time: 21.0332
+Mandelbrot time: 20.8918
 Total Mandelbrot pixels: 1478025
-Convolution time: 50.8517
-Total time: 71.8849
+Convolution time: 50.727
+Total time: 71.6188
+
 
 parallel----------------
-Mandelbrot time (openMp): 2.53709
+Parallel executation using : 1 threads.
+Mandelbrot time (openMp): 21.011
 Total Mandelbrot pixels (openMp): 1478025
-Convolution time (openMp): 3.65755
-Total time (openMp): 6.19465
+Convolution time (openMp): 52.386
+Total time (openMp): 73.3969
+
+Parallel executation using : 2 threads.
+Mandelbrot time (openMp): 17.3402
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 26.4078
+Total time (openMp): 43.7481
+
+Parallel executation using : 4 threads.
+Mandelbrot time (openMp): 13.2983
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 13.4908
+Total time (openMp): 26.7891
+
+Parallel executation using : 8 threads.
+Mandelbrot time (openMp): 7.04744
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 7.67483
+Total time (openMp): 14.7223
+
+Parallel executation using : 16 threads.
+Mandelbrot time (openMp): 4.09148
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 4.23016
+Total time (openMp): 8.32164
+
+Image validation successful!
 
 

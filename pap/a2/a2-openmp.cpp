@@ -7,7 +7,6 @@
 #include <complex>
 #include <chrono>
 #include <omp.h>
-#include <gdiplus.h>
 
 #include "a2-helpers.hpp"
 
