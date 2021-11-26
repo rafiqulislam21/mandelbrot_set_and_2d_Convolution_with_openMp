@@ -72,10 +72,17 @@ int mandelbrot(Image &image, double ratio = 0.15, int num_of_thread_used=1)
     vector<int> pixel = {0, 0, 0}; // red, green, blue (each range 0-255)
     complex<double> c;
 
+    //set the number of thread for parallel executation
     omp_set_num_threads(num_of_thread_used);
-    #pragma omp parallel for reduction (+:pixels_inside) private(i,j,pixel,c) collapse(2)
+
+    //#pragma omp parallel for reduction (+:pixels_inside) private(i,j,pixel,c) collapse(2) //-------------> (used in first try and performence was not best)
+    //2nd version performs better
+    ///todo------------pixels_inside not SYNCHRONIZEING
+    #pragma omp parallel
+    #pragma omp single
     for (j = 0; j < h; j++)
     {
+        #pragma omp task private(i,pixel,c)
         for (i = 0; i < w; i++)
         {
             double dx = (double)i / (w)*ratio - 1.10;
@@ -126,9 +133,13 @@ void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int 
         for (int ch = 0; ch < channels; ch++)
         {
             omp_set_num_threads(num_of_thread_used);
-            #pragma omp parallel for collapse(2)
+            //#pragma omp parallel for collapse(2) //-------------> (used in first try and performence was not best)
+            //2nd version performs better
+            #pragma omp parallel
+            #pragma omp single
             for (int i = 0; i < h; i++)
             {
+                #pragma omp task
                 for (int j = 0; j < w; j++)
                 {
                     double val = 0.0;
@@ -213,7 +224,7 @@ void imageValidation(){
 
 int main(int argc, char **argv)
 {
-    int thread_used [5] = { 1, 2, 4, 8, 16 };
+    int thread_used [5] = {1, 2, 4, 8, 16};
 
     // height and width of the output image
     // keep the height/width ratio for the same image
