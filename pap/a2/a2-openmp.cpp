@@ -7,6 +7,7 @@
 #include <complex>
 #include <chrono>
 #include <omp.h>
+#include <gdiplus.h>
 
 #include "a2-helpers.hpp"
 
@@ -165,46 +166,47 @@ void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int 
 }
 
 void imageValidation(){
-    bool isValid = false;
 
-    ifstream ifs("mandelbrot.ppm", ios::in | ios::binary); // input file
-    ostringstream oss; // output to string
-    ifstream ifs_openmp("mandelbrot_openmp.ppm", ios::in | ios::binary); // input file
-    ostringstream oss_openmp; // output to string
+    char *img1data, *img2data;
+	int *img1pixels, *img2pixels, *delta;
+	int s, n = 0, difference = 0;
 
-    int len;
-    char buf[1024];
-    while((len = ifs.readsome(buf, 1024)) > 0)
+    //read sequential image
+	ifstream img1("mandelbrot.ppm", ios::in|ios::binary|ios::ate);
+    //read openmp parallel image
+	ifstream img2("mandelbrot_openmp.ppm", ios::in|ios::binary|ios::ate);
+
+	if (img1.is_open() && img2.is_open())
     {
-        oss.write(buf, len);
-    }
+		s = (int)img1.tellg()-0x54;
+		//for image 1
+		img1data = new char [s];
+		img1pixels = new int [s/4];
+		img1.seekg (0x54, ios::beg);
+		img1.read (img1data, s);
+		img1pixels = reinterpret_cast<int*>(img1data);
+		img1.close();
 
-    int len_openmp;
-    char buf_openmp[1024];
-    while((len_openmp = ifs_openmp.readsome(buf_openmp, 1024)) > 0)
-    {
-        oss_openmp.write(buf_openmp, len_openmp);
-    }
+        //for image 2
+		img2data = new char [s];
+		img2pixels = new int [s/4];
+		img2.seekg (0x54, ios::beg);
+		img2.read (img2data, s);
+		img2pixels = reinterpret_cast<int*>(img2data);
+		img2.close();
 
-    string data = oss.str(); // get string data out of stream
-    string data_openmp = oss_openmp.str(); // get string data out of stream
+		delta = new int [s/4];
+	}
 
-    if(data.length() == data_openmp.length()){
-         for(int i = 0; i < data.length(); i++){
-            if(data[i] == data_openmp[i]){
-                isValid = true;
-            }else{
-                isValid = false;
-                break;
-            }
-        }
-    }
+	for(int i=0; i<s/4; i++){
+	    delta[i] = abs (img1data[i]-img2data[i]);
+	    difference += delta[i];
+    };
 
-
-    if(isValid){
+    if(difference == 0){
         cout<<"Image validation successful!"<<endl;
     }else{
-        cout<<"Imge validation failed!"<<endl;
+        cout<<"Image validation failed!"<<endl;
     }
 
 }
@@ -274,7 +276,7 @@ int main(int argc, char **argv)
     }
     ofs.close();
 
-    // image validation
+    // image validation for sequential and parallel
     imageValidation();
 
     return 0;
