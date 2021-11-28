@@ -10,7 +10,7 @@
 
 #include "a2-helpers.hpp"
 
-//int num_of_thread_used = 4;
+int num_of_thread_used = 1;
 
 using namespace std;
 
@@ -24,26 +24,36 @@ vector<gradient> gradients = {
 // Test if point c belongs to the Mandelbrot set
 bool mandelbrot_kernel(complex<double> c, vector<int> &pixel)
 {
+
     int max_iterations = 2048, iteration = 0;
     complex<double> z(0, 0);
+    omp_set_num_threads(num_of_thread_used);
 
-    while (abs(z) <= 4 && (iteration < max_iterations))
+    #pragma omp parallel
+    {
+        while (abs(z) <= 4 && (iteration < max_iterations))
         {
             /* Threads update the shared counter by turns */
-            z = z * z + c;
+            z = (z * z + c);
             iteration++;
 
         }
 
-    // now the computation of the color gradient and interpolation
-    double length = sqrt(z.real() * z.real() + z.imag() * z.imag());
-    long double m = (iteration + 1 - log(length) / log(2.0));
-    double q = m / (double)max_iterations;
+        #pragma omp master
+        {
+            // now the computation of the color gradient and interpolation
+            double length = sqrt(z.real() * z.real() + z.imag() * z.imag());
+            long double m = (iteration + 1 - log(length) / log(2.0));
+            double q = m / (double)max_iterations;
 
-    q = iteration + 1 - log(log(length)) / log(2.0);
-    q /= max_iterations;
+            q = iteration + 1 - log(log(length)) / log(2.0);
+            q /= max_iterations;
 
-    colorize(pixel, q, iteration, gradients);
+            colorize(pixel, q, iteration, gradients);
+        }
+
+    }
+
 
 
     return (iteration < max_iterations);
@@ -58,7 +68,7 @@ bool mandelbrot_kernel(complex<double> c, vector<int> &pixel)
  * @param[in] ratio
  *
 */
-int mandelbrot(Image &image, double ratio = 0.15, int num_of_thread_used=1)
+int mandelbrot(Image &image, double ratio = 0.15)
 {
     int i, j;
     int h = image.height;
@@ -74,15 +84,9 @@ int mandelbrot(Image &image, double ratio = 0.15, int num_of_thread_used=1)
 
     //set the number of thread for parallel executation
     omp_set_num_threads(num_of_thread_used);
-
-    //#pragma omp parallel for reduction (+:pixels_inside) private(i,j,pixel,c) collapse(2) //-------------> (used in first try and performence was not best)
-    //2nd version performs better
-    ///todo------------pixels_inside not SYNCHRONIZEING
-    #pragma omp parallel
-    #pragma omp single
+    #pragma omp parallel for default(none) private(i,j,pixel,c) shared(h, w, channels, ratio, image) reduction (+:pixels_inside) collapse(2)
     for (j = 0; j < h; j++)
     {
-        #pragma omp task private(i,pixel,c)
         for (i = 0; i < w; i++)
         {
             double dx = (double)i / (w)*ratio - 1.10;
@@ -96,6 +100,7 @@ int mandelbrot(Image &image, double ratio = 0.15, int num_of_thread_used=1)
             // apply to the image
             for (int ch = 0; ch < channels; ch++)
                 image(ch, j, i) = pixel[ch];
+
         }
     }
 
@@ -118,7 +123,7 @@ int mandelbrot(Image &image, double ratio = 0.15, int num_of_thread_used=1)
  * @param[in] nsteps
  *
 */
-void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int nsteps=1, int num_of_thread_used=1)
+void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int nsteps=1)
 {
     int h = src.height;
     int w = src.width;
@@ -133,13 +138,9 @@ void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int 
         for (int ch = 0; ch < channels; ch++)
         {
             omp_set_num_threads(num_of_thread_used);
-            //#pragma omp parallel for collapse(2) //-------------> (used in first try and performence was not best)
-            //2nd version performs better
-            #pragma omp parallel
-            #pragma omp single
+            #pragma omp parallel for default(none) shared(h,w,kernel,displ,ch,src,dst) collapse(2)
             for (int i = 0; i < h; i++)
             {
-                #pragma omp task
                 for (int j = 0; j < w; j++)
                 {
                     double val = 0.0;
@@ -163,6 +164,7 @@ void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int 
                         }
                     }
                     dst(ch, i, j) = (int)(val > 255 ? 255 : (val < 0 ? 0 : val));
+
                 }
             }
         }
@@ -224,7 +226,7 @@ void imageValidation(){
 
 int main(int argc, char **argv)
 {
-    int thread_used [5] = {1, 2, 4, 8, 16};
+    int thread_used [4] = {2, 4, 8, 16};
 
     // height and width of the output image
     // keep the height/width ratio for the same image
@@ -245,12 +247,13 @@ int main(int argc, char **argv)
 
     //using different trheads
     for(int i = 0; i < sizeof(thread_used)/sizeof(*thread_used); i++){
-        cout << "Parallel executation using : " <<thread_used[i]<<" threads."<<endl;
+        num_of_thread_used = thread_used[i];
+        cout << "Parallel executation using : " <<num_of_thread_used<<" threads."<<endl;
         auto t1 = chrono::high_resolution_clock::now();
 
         // Generate the mandelbrot set
         // Use OpenMP tasking to implement a parallel version
-        pixels_inside = mandelbrot(image, ratio, thread_used[i]);
+        pixels_inside = mandelbrot(image, ratio);
 
         auto t2 = chrono::high_resolution_clock::now();
 
@@ -261,13 +264,16 @@ int main(int argc, char **argv)
         // Use OpenMP tasking to implement a parallel version
         auto t3 = chrono::high_resolution_clock::now();
 
-        convolution_2d(image, filtered_image, 5, 0.37, 20, thread_used[i]);
+        convolution_2d(image, filtered_image, 5, 0.37, 20);
 
         auto t4 = chrono::high_resolution_clock::now();
 
         cout << "Convolution time (openMp): " << chrono::duration<double>(t4 - t3).count() << endl;
 
-        cout << "Total time (openMp): " << chrono::duration<double>((t4 - t3) + (t2-t1)).count() << endl<<endl;
+        cout << "Total time (openMp): " << chrono::duration<double>((t4 - t3) + (t2-t1)).count() << endl;
+        //21.0212 is time for mandelbrot and 50.8213 is time for convolution in sequential
+        cout << "SpeedUp Mandelbrot: " << 21.0212/(chrono::duration<double>(t2 - t1).count()) << endl;
+        cout << "SpeedUp Convolution: " << 50.8213/(chrono::duration<double>(t4 - t3).count()) << endl <<endl;
     }
 
 

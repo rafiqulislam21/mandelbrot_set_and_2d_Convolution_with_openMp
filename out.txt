@@ -93,4 +93,46 @@ Image validation successful!
 
 -------parallel--#pragma omp parallel for reduction (+:pixels_inside) private(i,j,pixel,c) collapse(2), version------------
 
+-----------------------parallel task-------------
+Parallel executation using : 1 threads.
+Mandelbrot time (openMp): 20.7753
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 53.4438
+Total time (openMp): 74.219
+SpeedUp Mandelbrot: 1.01184
+SpeedUp Convolution: 0.684747
+
+Parallel executation using : 2 threads.
+Mandelbrot time (openMp): 23.0267
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 64.3202
+Total time (openMp): 87.3468
+SpeedUp Mandelbrot: 0.912907
+SpeedUp Convolution: 0.581833
+
+Parallel executation using : 4 threads.
+Mandelbrot time (openMp): 22.2392
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 78.384
+Total time (openMp): 100.623
+SpeedUp Mandelbrot: 0.945233
+SpeedUp Convolution: 0.505066
+
+Parallel executation using : 8 threads.
+Mandelbrot time (openMp): 24.7812
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 120.819
+Total time (openMp): 145.6
+SpeedUp Mandelbrot: 0.848273
+SpeedUp Convolution: 0.349048
+
+Parallel executation using : 16 threads.
+Mandelbrot time (openMp): 25.9737
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 148.166
+Total time (openMp): 174.14
+SpeedUp Mandelbrot: 0.809326
+SpeedUp Convolution: 0.291842
+
+Image validation successful!
 
