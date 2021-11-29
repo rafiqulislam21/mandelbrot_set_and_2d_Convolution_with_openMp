@@ -29,32 +29,23 @@ bool mandelbrot_kernel(complex<double> c, vector<int> &pixel)
     complex<double> z(0, 0);
     omp_set_num_threads(num_of_thread_used);
 
-    #pragma omp parallel
+    while (abs(z) <= 4 && (iteration < max_iterations))
     {
-        while (abs(z) <= 4 && (iteration < max_iterations))
-        {
-            /* Threads update the shared counter by turns */
-            z = (z * z + c);
-            iteration++;
-
-        }
-
-        #pragma omp master
-        {
-            // now the computation of the color gradient and interpolation
-            double length = sqrt(z.real() * z.real() + z.imag() * z.imag());
-            long double m = (iteration + 1 - log(length) / log(2.0));
-            double q = m / (double)max_iterations;
-
-            q = iteration + 1 - log(log(length)) / log(2.0);
-            q /= max_iterations;
-
-            colorize(pixel, q, iteration, gradients);
-        }
+        /* Threads update the shared counter by turns */
+        z = (z * z + c);
+        iteration++;
 
     }
 
+    // now the computation of the color gradient and interpolation
+    double length = sqrt(z.real() * z.real() + z.imag() * z.imag());
+    long double m = (iteration + 1 - log(length) / log(2.0));
+    double q = m / (double)max_iterations;
 
+    q = iteration + 1 - log(log(length)) / log(2.0);
+    q /= max_iterations;
+
+    colorize(pixel, q, iteration, gradients);
 
     return (iteration < max_iterations);
 }
@@ -84,7 +75,7 @@ int mandelbrot(Image &image, double ratio = 0.15)
 
     //set the number of thread for parallel executation
     omp_set_num_threads(num_of_thread_used);
-    #pragma omp parallel for default(none) private(i,j,pixel,c) shared(h, w, channels, ratio, image) reduction (+:pixels_inside) collapse(2)
+    #pragma omp parallel for schedule(dynamic) default(none) private(i,j,pixel,c) shared(h, w, channels, ratio, image) reduction (+:pixels_inside) collapse(2)
     for (j = 0; j < h; j++)
     {
         for (i = 0; i < w; i++)
@@ -95,7 +86,7 @@ int mandelbrot(Image &image, double ratio = 0.15)
             c = complex<double>(dx, dy);
 
             if (mandelbrot_kernel(c, pixel)) // the actual mandelbrot kernel
-                    pixels_inside++;
+                pixels_inside++;
 
             // apply to the image
             for (int ch = 0; ch < channels; ch++)
@@ -104,7 +95,6 @@ int mandelbrot(Image &image, double ratio = 0.15)
         }
     }
 
-    //#pragma omp barrier
     return pixels_inside;
 }
 
@@ -226,7 +216,7 @@ void imageValidation(){
 
 int main(int argc, char **argv)
 {
-    int thread_used [4] = {2, 4, 8, 16};
+    int thread_used [5] = {1, 2, 4, 8, 16};
 
     // height and width of the output image
     // keep the height/width ratio for the same image
