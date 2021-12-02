@@ -11,9 +11,8 @@
 #include "a2-helpers.hpp"
 
 using namespace std;
-//---------------------parallel loop version---------------------------------
+//---------------------omp task version---------------------------------
 int num_of_thread_used = 1;
-
 // A set of random gradients, adjusted for this mandelbrot algorithm
 vector<gradient> gradients = {
     gradient({0, 0, 0}, {76, 57, 125}, 0.0, 0.010, 2000),
@@ -75,25 +74,22 @@ int mandelbrot(Image &image, double ratio = 0.15)
 
     //set the number of thread for parallel executation
     omp_set_num_threads(num_of_thread_used);
-    #pragma omp parallel for schedule(dynamic) default(none) private(i,j,pixel,c) shared(h, w, channels, ratio, image) reduction (+:pixels_inside) collapse(2)
-    //#pragma omp parallel default(none) private(i,j,pixel,c) shared(h, w, channels, ratio, image, pixels_inside)
-    //#pragma omp single
+    #pragma omp parallel default(none) private(i,j,pixel,c) shared(h, w, channels, ratio, image, pixels_inside)
+    #pragma omp single
     for (j = 0; j < h; j++)
     {
-        //#pragma omp task
+        #pragma omp task
         for (i = 0; i < w; i++)
         {
             double dx = (double)i / (w)*ratio - 1.10;
             double dy = (double)j / (h)*0.1 - 0.35;
 
             c = complex<double>(dx, dy);
-
             if (mandelbrot_kernel(c, pixel)) // the actual mandelbrot kernel
                 {
-                    //#pragma omp critical
+                    #pragma omp critical
                     pixels_inside++;
                 }
-
             // apply to the image
             for (int ch = 0; ch < channels; ch++)
                 image(ch, j, i) = pixel[ch];
@@ -134,12 +130,11 @@ void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int 
         for (int ch = 0; ch < channels; ch++)
         {
             omp_set_num_threads(num_of_thread_used);
-            #pragma omp parallel for default(none) shared(h,w,kernel,displ,ch,src,dst) collapse(2)
-            //#pragma omp parallel default(none) shared(h, w, kernel, displ, ch, src, dst)
-            //#pragma omp single
+            #pragma omp parallel default(none) shared(h, w, kernel, displ, ch, src, dst)
+            #pragma omp single
             for (int i = 0; i < h; i++)
             {
-                //#pragma omp task
+                #pragma omp task
                 for (int j = 0; j < w; j++)
                 {
                     double val = 0.0;
@@ -167,7 +162,7 @@ void convolution_2d(Image &src, Image &dst, int kernel_width, double sigma, int 
                 }
             }
         }
-
+        //#pragma omp barrier
         if ( step < nsteps-1 ) {
             // swap references
             // we can reuse the src buffer for this example
@@ -225,7 +220,7 @@ void imageValidation(){
 
 int main(int argc, char **argv)
 {
-    int thread_used [5] = {1, 2, 4, 8, 16};
+    int thread_used [4] = {2, 4, 8, 16};
 
     // height and width of the output image
     // keep the height/width ratio for the same image

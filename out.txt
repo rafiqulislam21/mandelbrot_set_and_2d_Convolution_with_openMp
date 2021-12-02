@@ -4,11 +4,10 @@
 
 --------sequential--------------
 
-Mandelbrot time: 21.0212
+Mandelbrot time: 20.9354
 Total Mandelbrot pixels: 1478025
-Convolution time: 50.8213
-Total time: 71.8424
-
+Convolution time: 51.0527
+Total time: 71.9881
 
 --------Parallel--------------
 Parallel executation using : 1 threads.
