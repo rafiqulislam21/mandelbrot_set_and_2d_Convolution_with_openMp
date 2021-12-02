@@ -220,7 +220,7 @@ void imageValidation(){
 
 int main(int argc, char **argv)
 {
-    int thread_used [4] = {2, 4, 8, 16};
+    int thread_used [5] = {1, 2, 4, 8, 16};
 
     // height and width of the output image
     // keep the height/width ratio for the same image
