@@ -202,18 +202,20 @@ void imageValidation(){
 		img2.close();
 
 		delta = new int [s/4];
+
+		for(int i=0; i<s/4; i++){
+            delta[i] = abs (img1data[i]-img2data[i]);
+            difference += delta[i];
+        };
+
+        if(difference == 0){
+            cout<<"Image validation successful!"<<endl;
+        }else{
+            cout<<"Image validation failed!"<<endl;
+        }
+	}else{
+        cout<<"Image not found"<<endl;
 	}
-
-	for(int i=0; i<s/4; i++){
-	    delta[i] = abs (img1data[i]-img2data[i]);
-	    difference += delta[i];
-    };
-
-    if(difference == 0){
-        cout<<"Image validation successful!"<<endl;
-    }else{
-        cout<<"Image validation failed!"<<endl;
-    }
 
 }
 
