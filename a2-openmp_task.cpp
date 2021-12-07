@@ -87,7 +87,7 @@ int mandelbrot(Image &image, double ratio = 0.15)
             c = complex<double>(dx, dy);
             if (mandelbrot_kernel(c, pixel)) // the actual mandelbrot kernel
                 {
-                    #pragma omp critical
+                    #pragma omp atomic
                     pixels_inside++;
                 }
             // apply to the image

@@ -2,14 +2,107 @@
 =======================ALMA====================================
 *speedUp = timeSequential / timeParallel
 
---------sequential--------------
+--------sequential------------------------------
 
 Mandelbrot time: 20.9354
 Total Mandelbrot pixels: 1478025
 Convolution time: 51.0527
 Total time: 71.9881
+--------sequential------------------------------
 
---------Parallel---- parallel for version-----------------
+--------omp task version------------------------
+
+Parallel executation using : 1 threads.
+Mandelbrot time (openMp): 20.6711
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 52.6656
+Total time (openMp): 73.3366
+SpeedUp Mandelbrot: 1.01279
+SpeedUp Convolution: 0.969376
+
+Parallel executation using : 2 threads.
+Mandelbrot time (openMp): 10.42
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 26.5992
+Total time (openMp): 37.0191
+SpeedUp Mandelbrot: 2.00916
+SpeedUp Convolution: 1.91933
+
+Parallel executation using : 4 threads.
+Mandelbrot time (openMp): 5.31542
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 13.5537
+Total time (openMp): 18.8692
+SpeedUp Mandelbrot: 3.93862
+SpeedUp Convolution: 3.76669
+
+Parallel executation using : 8 threads.
+Mandelbrot time (openMp): 2.95793
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 7.69397
+Total time (openMp): 10.6519
+SpeedUp Mandelbrot: 7.07771
+SpeedUp Convolution: 6.63542
+
+Parallel executation using : 16 threads.
+Mandelbrot time (openMp): 1.67388
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 4.15648
+Total time (openMp): 5.83036
+SpeedUp Mandelbrot: 12.5071
+SpeedUp Convolution: 12.2827
+
+Image validation successful!
+
+--------omp task version------------------------
+
+
+--------omp taskloop version--------------------
+
+Parallel executation using : 1 threads.
+Mandelbrot time (openMp): 20.8106
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 52.937
+Total time (openMp): 73.7476
+SpeedUp Mandelbrot: 1.006
+SpeedUp Convolution: 0.964404
+
+Parallel executation using : 2 threads.
+Mandelbrot time (openMp): 10.7501
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 26.8192
+Total time (openMp): 37.5693
+SpeedUp Mandelbrot: 1.94745
+SpeedUp Convolution: 1.90359
+
+Parallel executation using : 4 threads.
+Mandelbrot time (openMp): 5.46529
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 13.6204
+Total time (openMp): 19.0857
+SpeedUp Mandelbrot: 3.83061
+SpeedUp Convolution: 3.74826
+
+Parallel executation using : 8 threads.
+Mandelbrot time (openMp): 3.08331
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 7.72632
+Total time (openMp): 10.8096
+SpeedUp Mandelbrot: 6.78991
+SpeedUp Convolution: 6.60763
+
+Parallel executation using : 16 threads.
+Mandelbrot time (openMp): 1.73551
+Total Mandelbrot pixels (openMp): 1478025
+Convolution time (openMp): 4.18567
+Total time (openMp): 5.92118
+SpeedUp Mandelbrot: 12.063
+SpeedUp Convolution: 12.197
+
+Image validation successful!
+--------omp taskloop version--------------------
+
+--------omp parallel for version----------------
 Parallel executation using : 1 threads.
 Mandelbrot time (openMp): 20.8479
 Total Mandelbrot pixels (openMp): 1478025
@@ -51,51 +144,4 @@ SpeedUp Mandelbrot: 12.8237
 SpeedUp Convolution: 12.0737
 
 Image validation successful!
--------parallel--parallel for version---------------------
-
-
-
------------------------omp task----test version---------
-Parallel executation using : 1 threads.
-Mandelbrot time (openMp): 20.5927
-Total Mandelbrot pixels (openMp): 1478025
-Convolution time (openMp): 52.7829
-Total time (openMp): 73.3756
-SpeedUp Mandelbrot: 1.01664
-SpeedUp Convolution: 0.967221
-
-Parallel executation using : 2 threads.
-Mandelbrot time (openMp): 10.4583
-Total Mandelbrot pixels (openMp): 1478025
-Convolution time (openMp): 26.6797
-Total time (openMp): 37.138
-SpeedUp Mandelbrot: 2.0018
-SpeedUp Convolution: 1.91354
-
-Parallel executation using : 4 threads.
-Mandelbrot time (openMp): 5.38178
-Total Mandelbrot pixels (openMp): 1478025
-Convolution time (openMp): 13.6494
-Total time (openMp): 19.0311
-SpeedUp Mandelbrot: 3.89005
-SpeedUp Convolution: 3.7403
-
-Parallel executation using : 8 threads.
-Mandelbrot time (openMp): 2.97795
-Total Mandelbrot pixels (openMp): 1478025
-Convolution time (openMp): 7.75953
-Total time (openMp): 10.7375
-SpeedUp Mandelbrot: 7.03015
-SpeedUp Convolution: 6.57935
-
-Parallel executation using : 16 threads.
-Mandelbrot time (openMp): 1.79432
-Total Mandelbrot pixels (openMp): 1478025
-Convolution time (openMp): 4.24192
-Total time (openMp): 6.03624
-SpeedUp Mandelbrot: 11.6676
-SpeedUp Convolution: 12.0353
-
-Image validation successful!
-
-------------------------------------test version-------------
+--------omp parallel for version----------------
